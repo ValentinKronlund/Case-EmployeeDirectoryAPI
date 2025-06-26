@@ -5,7 +5,10 @@ No AI tools were used for code snippets -- However ChatGPT has been used for con
 # NOTE
 For this project to work correctly, you need to make sure you have a .env file containing the REACT_APP_API_URL in the root folder of the frontend project
 
-frontend/.env === REACT_APP_API_URL=http://localhost:4000
+frontend/.env
+
+REACT_APP_API_URL=http://localhost:4000
+
 
 ## How to start the frontend app
 
