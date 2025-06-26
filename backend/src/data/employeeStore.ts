@@ -8,15 +8,15 @@ import { employees } from './mockDb';
 const localStoragePath = path.resolve(__dirname, 'employeeLocalStorage');
 const localStorage = new LocalStorage(localStoragePath);
 
+export function seedEmployees() {
+	localStorage.clear();
+	localStorage.setItem('employees', JSON.stringify(employees));
+}
+
 function initStorage() {
 	if (!localStorage.getItem('employees')) {
 		seedEmployees();
 	}
-}
-
-export function seedEmployees() {
-	localStorage.clear();
-	localStorage.setItem('employees', JSON.stringify(employees));
 }
 
 export function getAllEmployees(): Employee[] {

@@ -1,6 +1,6 @@
 /** @format */
 
-import express, { Request, Response } from 'express';
+import express from 'express';
 import { getAllEmployees, searchEmployees, addEmployee } from '../data/employeeStore';
 import { Employee } from '../types/Employee';
 import { emailAlreadyExists, isValidEmployee } from './utils/validation';
