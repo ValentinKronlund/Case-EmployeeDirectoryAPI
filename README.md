@@ -1,37 +1,32 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The frontend project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 No AI tools were used for code snippets -- However ChatGPT has been used for consultation on project structure and certain node packages such as 'node-localstorage'.
 
 # NOTE
-For this project to work correctly, you need to make sure you have a .env file containing the REACT_APP_API_URL in the root folder of the frontend project
+For this project to work correctly, you need to make sure you have a .env file containing the REACT_APP_API_URL in the root folder of the 'frontend' project
 
 frontend/.env
 
 REACT_APP_API_URL=http://localhost:4000
 
+_______
 
-## How to start the frontend app
+## Initializing the app
 
-Navigate to the frontend project directory in your terminal.
-
+In seperate terminals, navigate to the 'backend' and 'frontend' root directories.
 Start by installing the necessary node modules through the terminal command.
 
-### `npm i`
+#### `npm i`
 
-The following script:
+_____
 
-### `npm start`
+## How to start the app
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Inside the 'backend' root directory, run the following terminal command: `npm run dev`
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Inside the 'frontend' root directory, run the following terminal command: `npm start`
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+____
 
 ## Frontend Functionality
 
