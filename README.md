@@ -1,10 +1,9 @@
-# Getting Started with Create React App
-
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 No AI tools were used for code snippets -- However ChatGPT has been used for consultation on project structure and certain node packages such as 'node-localstorage'.
 
-# NOTE -- For this project to work correctly, you need to make sure you have a .env file containing the REACT_APP_API_URL in the root folder of the frontend project
+# NOTE
+For this project to work correctly, you need to make sure you have a .env file containing the REACT_APP_API_URL in the root folder of the frontend project
 
 frontend/.env === REACT_APP_API_URL=http://localhost:4000
 
