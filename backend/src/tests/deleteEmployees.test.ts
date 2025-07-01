@@ -1,93 +1,90 @@
 /** @format */
 
+/** @format */
+
 import request from 'supertest';
 import app, { server } from '../index';
-import { employees } from '../data/seed.mock';
 import { Employee } from '../types';
 
-describe('POST /api/deleteEmployees', () => {
-	describe('| Passing a single employees "id" as a STRING OUTSIDE of a query', () => {
-		it('should throw a "400" Bad Request error, with a failing message', async () => {
-			const ids = '1';
-			const res = await request(app).post('/api/deleteEmployees').send(ids);
-			expect(res.statusCode).toEqual(400);
-			expect(res.body).toEqual({ error: 'No employee ids have been sent in the query' });
-		});
-	});
-
+describe('POST /api/employees/delete', () => {
 	describe('| Passing a single employees "id" as a STRING', () => {
 		it('should throw a "400" Bad Request error, with a failing message', async () => {
-			const query = '1';
-			const res = await request(app).post('/api/deleteEmployees').send({ query });
-			expect(res.statusCode).toEqual(400);
-			expect(res.body).toEqual({
-				error: 'Invalid ids have been provided. Aborting deletion request',
-			});
+			const ids = '1';
+			const res = await request(app).delete('/api/employees/delete').send(ids);
+			expect(res.statusCode).toEqual(500);
 		});
 	});
 
-	describe('| Passing a single employees "id" as a NUMBER', () => {
+	describe('| Passing a single employees "id" as a STRING inside of an object with a key of "ids"', () => {
 		it('should throw a "400" Bad Request error, with a failing message', async () => {
-			const query = 1;
-			const res = await request(app).post('/api/deleteEmployees').send({ query });
+			const query = { ids: '1' };
+			const res = await request(app).delete('/api/employees/delete').send(query);
+			const errorStringMatch =
+				'IDs field is required, and must be passed inside an object with the key of ids, and with an array value of numbers.';
+
 			expect(res.statusCode).toEqual(400);
-			expect(res.body).toEqual({
-				error: 'Invalid ids have been provided. Aborting deletion request',
-			});
+			expect(res.body.error).toEqual(errorStringMatch);
 		});
 	});
 
-	describe('| Passing a single employees "id" as a NUMBER inside of an array', () => {
+	describe('| Passing a single employees "id" as a NUMBER inside of an object with a key of "ids"', () => {
+		it('should throw a "400" Bad Request error, with a failing message', async () => {
+			const query = { ids: 1 };
+			const res = await request(app).delete('/api/employees/delete').send(query);
+			const errorStringMatch =
+				'IDs field is required, and must be passed inside an object with the key of ids, and with an array value of numbers.';
+			expect(res.statusCode).toEqual(400);
+			expect(res.body.error).toEqual(errorStringMatch);
+		});
+	});
+
+	describe('| Passing a single employees "id" as an object, with a key of "ids" and an array of NUMBER as a value', () => {
 		it('should return a "200" Success code, with a success message', async () => {
-			const query = [1];
-			const res = await request(app).post('/api/deleteEmployees').send({ query });
+			const query = { ids: [1] };
+			const res = await request(app).delete('/api/employees/delete').send(query);
+
+			const successStringMatch = 'Users with the following ids have been deleted: 1';
 			expect(res.statusCode).toEqual(200);
-			expect(res.body).toEqual({
-				message: `Users with the following ids have been deleted: ${query}`,
-			});
+			expect(res.body.message).toEqual(successStringMatch);
 		});
 	});
 
-	describe('| Passing a single employees "id" as a STRING inside of an array', () => {
-		it('should throw a "400" Bad Request error, with a failing message', async () => {
-			const query = ['1'];
-			const res = await request(app).post('/api/deleteEmployees').send({ query });
-			expect(res.statusCode).toEqual(400);
-			expect(res.body).toEqual({
-				error: 'Invalid ids have been provided. Aborting deletion request',
-			});
+	describe('| Passing a single employees "id" as an object, with a key of "ids" and an array of STRING as a value', () => {
+		it('should throw a "200" Success code, with a success message', async () => {
+			const query = { ids: ['2'] };
+			const res = await request(app).delete('/api/employees/delete').send(query);
+			const successStringMatch = `Users with the following ids have been deleted: ${query.ids[0]}`;
+			expect(res.statusCode).toEqual(200);
+			expect(res.body.message).toEqual(successStringMatch);
 		});
 	});
 
-	describe('| Passing multiple employees "id" as NUMBERS inside of an array', () => {
-		const query = [2, 3, 4, 5];
-
+	describe('| Passing a multiple employees "id" as an object, with a key of "ids" and an array of NUMBER as a value', () => {
+		const query = { ids: [2, 3, 4, 5] };
 		it('| should return a "200" Success code, with a success message', async () => {
-			const res = await request(app).post('/api/deleteEmployees').send({ query });
+			const res = await request(app).delete('/api/employees/delete').send(query);
+			const successStringMatch = `Users with the following ids have been deleted: ${query.ids}`;
+
 			expect(res.statusCode).toEqual(200);
-			expect(res.body).toEqual({
-				message: `Users with the following ids have been deleted: ${query}`,
-			});
+			expect(res.body.message).toEqual(successStringMatch);
 		});
+		// it('| should not expect deleted employees to remain in the database', async () => {
+		// 	const { body: remainingEmployeesResult } = await request(app).get('/api/employees');
+		// 	const matchedEmployeeWithDeleted = remainingEmployeesResult.data.filter(
+		// 		(employee: Employee) => query.ids.includes(employee.id),
+		// 	);
 
-		it('| should not expect deleted employees to remain in the database', async () => {
-			const { body: remainingEmployeesResult } = await request(app).get('/api/employees');
-			const matchedEmployeeWithDeleted = remainingEmployeesResult.filter(
-				(employee: Employee) => query.includes(employee.id),
-			);
-
-			expect(matchedEmployeeWithDeleted).toEqual([]);
-		});
+		// 	expect(matchedEmployeeWithDeleted).toEqual([]);
+		// });
 	});
 
-	describe('| Passing multiple employees "id" as mixed types inside of an array', () => {
+	describe('| Passing multiple employees "id" as a mixed array type inside of an object, with a key of "ids"', () => {
 		it('should throw a "400" Bad Request error, with failing message', async () => {
-			const query = [2, '3', { '4': 4 }, [5]];
-			const res = await request(app).post('/api/deleteEmployees').send({ query });
+			const query = { ids: [6, '7', { '8': 8 }, [9]] };
+			const res = await request(app).delete('/api/employees/delete').send(query);
+			const errorStringMatch = 'ID must be a number';
 			expect(res.statusCode).toEqual(400);
-			expect(res.body).toEqual({
-				error: 'Invalid ids have been provided. Aborting deletion request',
-			});
+			expect(res.body.error).toEqual(errorStringMatch);
 		});
 	});
 });

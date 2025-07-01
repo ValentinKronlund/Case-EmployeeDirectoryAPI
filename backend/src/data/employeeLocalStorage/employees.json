@@ -6,36 +6,6 @@
     "email": "0x00@not1.com"
   },
   {
-    "id": 1,
-    "name": "Alice",
-    "surname": "Alexandersson",
-    "email": "alice.alex@nomail.com"
-  },
-  {
-    "id": 2,
-    "name": "Bob",
-    "surname": "Bovine",
-    "email": "bob.b@nomail.com"
-  },
-  {
-    "id": 3,
-    "name": "Carter",
-    "surname": "Cleft",
-    "email": "carter.c.cleft@nomail.com"
-  },
-  {
-    "id": 4,
-    "name": "David",
-    "surname": "Dusk",
-    "email": "Dark.David@nomail.com"
-  },
-  {
-    "id": 5,
-    "name": "Eric",
-    "surname": "Erving",
-    "email": "Eric@nomail.com"
-  },
-  {
     "id": 6,
     "name": "Fredric",
     "surname": "Foreman",
@@ -64,17 +34,5 @@
     "name": "Jake",
     "surname": "Josephs",
     "email": "JJ.Adams@nomail.com"
-  },
-  {
-    "name": "ss",
-    "surname": "ss",
-    "email": "ss@gmail.com",
-    "id": 1751396527470
-  },
-  {
-    "name": "ss",
-    "surname": "ss",
-    "email": "sa@gmail.com",
-    "id": 1751396534041
   }
 ]

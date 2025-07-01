@@ -1,22 +1,28 @@
 /** @format */
 
 import request from 'supertest';
-import app from '../index';
-import { employees } from '../data/seed.mock';
-import { Employee } from '../types';
+import app, { server } from '../index';
+import { employeesSeed } from '../data/seed.mock';
 
 describe('GET /api/employees', () => {
 	describe('| No search query arguments passed:', () => {
 		it('should return all employees', async () => {
 			const res = await request(app).get('/api/employees');
+
 			expect(res.statusCode).toEqual(200);
-			expect(res.body).toEqual([...employees]);
+			expect(res.body.message).toMatch(/Successfully fetched employee data/i);
+			expect(res.body.error).toEqual(undefined);
+			expect(res.body).toHaveProperty('data', employeesSeed);
 		});
 	});
+});
 
+describe('POST /api/employees/search', () => {
 	describe('| Search argument "Alice" passed:', () => {
 		it('should return the employee "Alice"', async () => {
-			const res = await request(app).get('/api/employees?searchArgument=Alice');
+			const query = { query: 'Alice' };
+			const res = await request(app).post('/api/employees/search').send(query);
+
 			expect(res.statusCode).toEqual(200);
 			expect(res.body).toEqual([
 				{
@@ -31,7 +37,9 @@ describe('GET /api/employees', () => {
 
 	describe('| Search argument "1" passed: ', () => {
 		it('should return employees with "1" in any of their data', async () => {
-			const res = await request(app).get('/api/employees?searchArgument=1');
+			const query = { query: '1' };
+			const res = await request(app).post('/api/employees/search').send(query);
+
 			expect(res.statusCode).toEqual(200);
 			expect(res.body).toEqual([
 				{ id: 0, name: 'Nole', surname: 'Nullish', email: '0x00@not1.com' },
@@ -48,7 +56,9 @@ describe('GET /api/employees', () => {
 
 	describe('| Search argument "ErViNg" passed:', () => {
 		it('should return the employee "Eric Erving"', async () => {
-			const res = await request(app).get('/api/employees?searchArgument=ErViNg');
+			const query = { query: 'ErViNg' };
+			const res = await request(app).post('/api/employees/search').send(query);
+
 			expect(res.statusCode).toEqual(200);
 			expect(res.body).toEqual([
 				{ id: 5, name: 'Eric', surname: 'Erving', email: 'Eric@nomail.com' },
@@ -58,148 +68,220 @@ describe('GET /api/employees', () => {
 
 	describe('| Search argument "Alexandersson Erving" passed:', () => {
 		it('should throw a Not Found (404) error', async () => {
-			const res = await request(app).get(
-				'/api/employees?searchArgument=Alexandersson%20Erving',
-			);
+			const query = { query: 'Alexandersson Erving' };
+			const res = await request(app).post('/api/employees/search').send(query);
+
 			expect(res.statusCode).toEqual(404);
-			expect(res.body).toEqual({ error: 'No employees found with provided argument' });
+			expect(res.body.error).toEqual('No employees found with provided argument');
 		});
 	});
 });
 
-describe('POST /api/employees', () => {
-	describe('| Passing an employee object in request body', () => {
-		describe('| Passing a full valid employee object in body', () => {
-			it('should return a "201" status code, and success message', async () => {
-				const newEmployee: Employee = {
-					id: 11,
-					name: 'Eleven',
-					surname: 'Strange',
-					email: 'Stranger_Things@nomail.com',
-				};
-				const res = await request(app).post('/api/employees').send({ newEmployee });
-				expect(res.statusCode).toEqual(201);
-				expect(res.body).toEqual({
-					message: `Employee ${newEmployee.name} created, with email ${newEmployee.email}`,
-				});
-			});
-		});
+describe('POST /api/employees/add', () => {
+	describe('| Passing valid employee object', () => {
+		it('| test should accept object with valid data', async () => {
+			const employee = {
+				newEmployee: {
+					name: 'Foo',
+					surname: 'Bar',
+					email: 'fubar@example.com',
+				},
+			};
 
-		describe('| Passing an object that lacks an "id" in body', () => {
-			it('should return a "201" status code, and success message', async () => {
-				const newEmployee: Omit<Employee, 'id'> = {
-					name: 'Mike',
-					surname: 'Strange',
-					email: 'Stranger_Mike@nomail.com',
-				};
-				const res = await request(app).post('/api/employees').send({ newEmployee });
-				expect(res.statusCode).toEqual(201);
-				expect(res.body).toEqual({
-					message: `Employee ${newEmployee.name} created, with email ${newEmployee.email}`,
-				});
-			});
-		});
+			const successString = `Employee ${employee.newEmployee.name} created`;
 
-		describe('| Passing an object that lacks a name in body', () => {
-			it('should throw a "400" Bad Request error', async () => {
-				const newEmployee: Employee = {
-					id: 11,
+			const result = await request(app).post('/api/employees/add').send(employee);
+
+			expect(result.status).toEqual(201);
+			expect(result.body.message).toMatch(successString);
+			expect(result.body.error).toEqual(undefined);
+		});
+	});
+
+	describe('| Passing an empty object in the body', () => {
+		it('| test should reject invalid employee data', async () => {
+			const res = await request(app).post('/api/employees/add').send({});
+
+			expect(res.status).toEqual(400);
+			expect(res.body).toHaveProperty('error');
+		});
+	});
+
+	describe('| Passing employee objects with invalid "role" property', () => {
+		it('| test should reject objects with invalid data', async () => {
+			const employee = {
+				newEmployee: {
+					name: 'John',
+					surname: 'Doe',
+					email: 'JD@example.com',
+					role: 'UX Designer',
+				},
+			};
+			const errorStringMatch = '"newEmployee.role" is not allowed';
+
+			const result = await request(app).post('/api/employees/add').send(employee);
+
+			expect(result.status).toEqual(400);
+			expect(result.body.error).toMatch(errorStringMatch);
+		});
+	});
+
+	describe('| Passing employee objects with empty "name" property', () => {
+		it('| test should reject objects with invalid data', async () => {
+			const employee = {
+				newEmployee: {
 					name: '',
-					surname: 'Strange',
-					email: 'Stranger_Things@nomail.com',
-				};
-				const res = await request(app).post('/api/employees').send({ newEmployee });
-				expect(res.statusCode).toEqual(400);
-				expect(res.body).toEqual({ error: 'You must provide valid employee data' });
-			});
-		});
+					surname: 'Doe',
+					email: 'ghost_doe@example.com',
+				},
+			};
+			const successStringMatch =
+				'Name cannot be empty, instead it must be at least 2 characters long.';
 
-		describe('| Passing an object that lacks a surname in body', () => {
-			it('should throw a "400" Bad Request error', async () => {
-				const newEmployee: Employee = {
-					id: 11,
-					name: 'Eleven',
+			const result = await request(app).post('/api/employees/add').send(employee);
+
+			expect(result.status).toEqual(400);
+			expect(result.body.error).toMatch(successStringMatch);
+		});
+	});
+
+	describe('| Passing employee objects with empty "surname" property', () => {
+		it('| test should reject objects with invalid data', async () => {
+			const employee = {
+				newEmployee: {
+					name: 'John',
 					surname: '',
-					email: 'Stranger_Things@nomail.com',
-				};
-				const res = await request(app).post('/api/employees').send({ newEmployee });
-				expect(res.statusCode).toEqual(400);
-				expect(res.body).toEqual({ error: 'You must provide valid employee data' });
-			});
-		});
+					email: 'ghost_John@example.com',
+				},
+			};
+			const successStringMatch =
+				'Surname cannot be empty, instead it must be at least 2 characters long.';
 
-		describe('| Passing an object that lacks an email in body', () => {
-			it('should throw a "400" Bad Request error', async () => {
-				const newEmployee: Employee = {
-					id: 11,
-					name: 'Eleven',
-					surname: 'Strange',
+			const result = await request(app).post('/api/employees/add').send(employee);
+
+			expect(result.status).toEqual(400);
+			expect(result.body.error).toMatch(successStringMatch);
+		});
+	});
+
+	describe('| Passing employee objects with empty "email" property', () => {
+		it('| test should reject objects with invalid data', async () => {
+			const employee = {
+				newEmployee: {
+					name: 'John',
+					surname: 'Doe',
 					email: '',
-				};
-				const res = await request(app).post('/api/employees').send({ newEmployee });
-				expect(res.statusCode).toEqual(400);
-				expect(res.body).toEqual({ error: 'You must provide valid employee data' });
-			});
-		});
+				},
+			};
+			const errorStringMatch = 'Email cannot be empty';
 
-		describe('| Passing an object with an already existing email in body', () => {
-			it('should throw a "400" Bad Request error', async () => {
-				const newEmployee: Employee = {
-					id: 11,
-					name: 'Eleven',
-					surname: 'Strange',
-					email: 'Stranger_Things@nomail.com',
-				};
-				const res = await request(app).post('/api/employees').send({ newEmployee });
-				expect(res.statusCode).toEqual(400);
-				expect(res.body).toEqual({
-					error: 'Employee already exists with the provided email',
-				});
-			});
-		});
+			const result = await request(app).post('/api/employees/add').send(employee);
 
-		describe('| Passing an object with an already existing name, but unique email in body', () => {
-			it('should return a "201" Success status code, and success message', async () => {
-				const newEmployee: Employee = {
-					id: 11,
-					name: 'Eleven',
-					surname: 'Strange',
-					email: 'Things_are_strange@nomail.com',
-				};
-				const res = await request(app).post('/api/employees').send({ newEmployee });
-				expect(res.statusCode).toEqual(201);
-				expect(res.body).toEqual({
-					message: `Employee ${newEmployee.name} created, with email ${newEmployee.email}`,
-				});
-			});
+			expect(result.status).toEqual(400);
+			expect(result.body.error).toMatch(errorStringMatch);
 		});
 	});
 
-	describe('| Passing NO employee object in request body', () => {
-		describe('| Passing an empty object in body', () => {
-			it('should throw a "400" Bad Request error', async () => {
-				const newEmployee = {};
-				const res = await request(app).post('/api/employees').send(newEmployee);
-				expect(res.statusCode).toEqual(400);
-				expect(res.body).toEqual({ error: 'No employee data sent in request body' });
-			});
-		});
+	describe('| Passing employee objects with invalid "email" property', () => {
+		it('| test should reject objects with invalid data', async () => {
+			const employee = {
+				newEmployee: {
+					name: 'John',
+					surname: 'Doe',
+					email: 'John_Doe',
+				},
+			};
 
-		describe('| Passing an empty {newEmployee} object in body', () => {
-			it('should throw a "400" Bad Request error', async () => {
-				const newEmployee = {};
-				const res = await request(app).post('/api/employees').send({ newEmployee });
-				expect(res.statusCode).toEqual(400);
-				expect(res.body).toEqual({ error: 'You must provide valid employee data' });
-			});
-		});
+			const result = await request(app).post('/api/employees/add').send(employee);
 
-		describe('| Not passing anything in body', () => {
-			it('should throw a "400" Bad Request error', async () => {
-				const res = await request(app).post('/api/employees').send();
-				expect(res.statusCode).toEqual(400);
-				expect(res.body).toEqual({ error: 'No employee data sent in request body' });
-			});
+			expect(result.status).toEqual(400);
+			expect(result.body.error).toMatch(/must be a valid email/i);
 		});
 	});
+
+	describe('| Passing employee objects with duplicated emails', () => {
+		it('| test should reject objects with duplicated email data', async () => {
+			const employee_one = {
+				newEmployee: {
+					name: 'John',
+					surname: 'Doe',
+					email: 'JD@gmail.com',
+				},
+			};
+
+			const employee_two = {
+				newEmployee: {
+					name: 'Jane',
+					surname: 'Doe',
+					email: 'JD@gmail.com',
+				},
+			};
+
+			const result_one = await request(app).post('/api/employees/add').send(employee_one);
+			const result_two = await request(app).post('/api/employees/add').send(employee_two);
+
+			expect(result_one.status).toEqual(201);
+			expect(result_two.status).toEqual(409);
+			expect(result_two.body.error).toMatch(/already exists/i);
+		});
+	});
+
+	describe('| Passing employee objects with duplicated names and surnames, but unique emails', () => {
+		it('| test should accept objects with duplicated name data', async () => {
+			const employee_one = {
+				newEmployee: {
+					name: 'John',
+					surname: 'Doe',
+					email: 'John_D@example.com',
+				},
+			};
+
+			const employee_two = {
+				newEmployee: {
+					name: 'Jane',
+					surname: 'Doe',
+					email: 'Jane_D@example.com',
+				},
+			};
+
+			const result_one = await request(app).post('/api/employees/add').send(employee_one);
+			const result_two = await request(app).post('/api/employees/add').send(employee_two);
+
+			expect(result_one.status).toEqual(201);
+			expect(result_two.status).toEqual(201);
+			expect(result_one.body.message).toMatch(
+				`Employee ${employee_one.newEmployee.name} created`,
+			);
+			expect(result_two.body.message).toMatch(
+				`Employee ${employee_two.newEmployee.name} created`,
+			);
+			expect(result_one.body.error).toEqual(undefined);
+			expect(result_two.body.error).toEqual(undefined);
+		});
+	});
+
+	describe('| Passing employee objects with an ID property', () => {
+		it('| test should accept objects with ID property, but not use it when creating new user.', async () => {
+			const employee = {
+				newEmployee: {
+					id: 666,
+					name: 'Lucifer',
+					surname: 'Morningstar',
+					email: 'good_guy@example.com',
+				},
+			};
+
+			const successString = `Employee ${employee.newEmployee.name} created`;
+
+			const result = await request(app).post('/api/employees/add').send(employee);
+
+			expect(result.status).toEqual(201);
+			expect(result.body.message).toMatch(successString);
+			expect(result.body.error).toEqual(undefined);
+		});
+	});
+});
+
+afterAll((done) => {
+	server.close(done);
 });
