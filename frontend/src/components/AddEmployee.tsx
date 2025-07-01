@@ -13,26 +13,28 @@ import { Employee } from '../types/Employee';
 
 interface AddEmployeeProps {
 	open: boolean;
-	onClose: () => void;
-	onAdd: (newEmployee: Omit<Employee, 'id'>) => void;
+	onClose: React.Dispatch<React.SetStateAction<boolean>>;
+	onSubmit: (newEmployee: Omit<Employee, 'id'>) => Promise<void>;
 }
 
-export const AddEmployee: FC<AddEmployeeProps> = ({ open, onClose, onAdd }) => {
+export const AddEmployee: FC<AddEmployeeProps> = ({ open, onClose, onSubmit }) => {
 	const [form, setForm] = useState<Omit<Employee, 'id'>>({
 		name: '',
 		surname: '',
 		email: '',
 	});
 
-	const handleChange =
-		(field: keyof Omit<Employee, 'id'>) => (e: ChangeEvent<HTMLInputElement>) => {
-			setForm((prev) => ({ ...prev, [field]: e.target.value }));
-		};
+	function handleChange(
+		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+		field: keyof Omit<Employee, 'id'>,
+	) {
+		setForm((prev) => ({ ...prev, [field]: e.target.value }));
+	}
 
 	const handleSubmit = () => {
-		onAdd(form);
-		onClose();
-		setForm({ name: '', surname: '', email: '' }); // reset
+		onSubmit(form);
+		setForm({ name: '', surname: '', email: '' });
+		onClose(false);
 	};
 
 	return (
@@ -43,24 +45,24 @@ export const AddEmployee: FC<AddEmployeeProps> = ({ open, onClose, onAdd }) => {
 				<TextField
 					label='Name'
 					value={form.name}
-					onChange={handleChange('name')}
+					onChange={(e) => handleChange(e, 'name')}
 					fullWidth
 				/>
 				<TextField
 					label='Surname'
 					value={form.surname}
-					onChange={handleChange('surname')}
+					onChange={(e) => handleChange(e, 'surname')}
 					fullWidth
 				/>
 				<TextField
 					label='Email'
 					value={form.email}
-					onChange={handleChange('email')}
+					onChange={(e) => handleChange(e, 'email')}
 					fullWidth
 				/>
 			</DialogContent>
 			<DialogActions>
-				<Button onClick={onClose}>Cancel</Button>
+				<Button onClick={() => onClose(false)}>Cancel</Button>
 				<Button
 					variant='contained'
 					onClick={handleSubmit}

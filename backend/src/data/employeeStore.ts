@@ -1,44 +1,35 @@
 /** @format */
+import { Employee } from '../types';
+import { readEmployeesFiles, writeEmployeesFile } from './utils';
 
-import { LocalStorage } from 'node-localstorage';
-import path from 'path';
-import { Employee } from '../types/Employee';
-import { employees } from './mockDb';
-
-const localStoragePath = path.resolve(__dirname, 'employeeLocalStorage');
-const localStorage = new LocalStorage(localStoragePath);
-
-export function seedEmployees() {
-	localStorage.clear();
-	localStorage.setItem('employees', JSON.stringify(employees));
-}
-
-function initStorage() {
-	if (!localStorage.getItem('employees')) {
-		seedEmployees();
+export async function getAllEmployees(): Promise<Employee[]> {
+	try {
+		return await readEmployeesFiles();
+	} catch (error) {
+		console.error('Failed to read "employees.json"', error);
+		return [];
 	}
 }
 
-export function getAllEmployees(): Employee[] {
-	initStorage();
-	return JSON.parse(localStorage.getItem('employees') || '[]');
-}
-
-export function searchEmployees(query: string): Employee[] {
-	return getAllEmployees().filter((employee) => {
+export async function searchEmployees(query: string): Promise<Employee[]> {
+	const employeeData = await getAllEmployees();
+	const filteredData = employeeData.filter((employee) => {
 		return [employee.name, employee.surname, employee.email, employee.id].some(
 			(searchField) => searchField.toString().toLowerCase().includes(query.toLowerCase()),
 		);
 	});
+
+	return filteredData;
 }
 
-export function addEmployee(employee: Employee) {
-	const employees = getAllEmployees();
-	employees.push(employee);
-	localStorage.setItem('employees', JSON.stringify(employees));
+export async function addEmployee(employee: Employee) {
+	const employeeData = await getAllEmployees();
+	const newEmployeeData = [...employeeData, employee];
+	writeEmployeesFile(newEmployeeData);
 }
 
-export function deleteEmployees(ids: number[]) {
-	const employees = getAllEmployees().filter((employee) => !ids.includes(employee.id));
-	localStorage.setItem('employees', JSON.stringify(employees));
+export async function deleteEmployees(ids: number[]) {
+	const employeeData = await getAllEmployees();
+	const newEmployeeData = employeeData.filter((employee) => !ids.includes(employee.id));
+	writeEmployeesFile(newEmployeeData);
 }

@@ -2,8 +2,8 @@
 
 import request from 'supertest';
 import app, { server } from '../index';
-import { employees } from '../data/mockDb';
-import { Employee } from '../types/Employee';
+import { employees } from '../data/seed.mock';
+import { Employee } from '../types';
 
 describe('POST /api/deleteEmployees', () => {
 	describe('| Passing a single employees "id" as a STRING OUTSIDE of a query', () => {

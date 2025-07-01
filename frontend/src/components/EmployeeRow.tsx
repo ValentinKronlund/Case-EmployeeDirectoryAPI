@@ -11,7 +11,7 @@ export function EmployeeRow({
 }: {
 	employee: Employee;
 	selectedEmployees: readonly number[];
-	handleSelectEmployee: (e: React.MouseEvent<unknown>, id: number) => void;
+	handleSelectEmployee: (id: number) => void;
 }) {
 	return (
 		<StyledTableRow key={employee.id}>
@@ -19,7 +19,7 @@ export function EmployeeRow({
 				<Checkbox
 					color='primary'
 					checked={selectedEmployees.includes(employee.id)}
-					onClick={(e) => handleSelectEmployee(e, employee.id)}
+					onClick={() => handleSelectEmployee(employee.id)}
 				/>
 			</StyledTableCell>
 			{EMPLOYEE_KEYS.map((key) => (

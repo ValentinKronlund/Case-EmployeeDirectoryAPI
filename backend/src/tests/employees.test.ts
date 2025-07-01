@@ -2,8 +2,8 @@
 
 import request from 'supertest';
 import app from '../index';
-import { employees } from '../data/mockDb';
-import { Employee } from '../types/Employee';
+import { employees } from '../data/seed.mock';
+import { Employee } from '../types';
 
 describe('GET /api/employees', () => {
 	describe('| No search query arguments passed:', () => {

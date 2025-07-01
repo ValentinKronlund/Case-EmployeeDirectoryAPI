@@ -1,22 +1,20 @@
 /** @format */
 
 import express from 'express';
-import employeeRoutes from './routes/employees';
-import deleteEmployees from './routes/deleteEmployees';
-import { seedEmployees } from './data/employeeStore';
+import employeesRouter from './routes/employeesRouter';
+import { seedDatabase } from './data/utils/fileSystemAsync.utils';
 import cors from 'cors';
 
 const app = express();
 const PORT = 4000;
 
 app.use(cors());
-app.use('/api/employees', employeeRoutes);
-app.use('/api/deleteEmployees', deleteEmployees);
+app.use('/api/employees', employeesRouter);
 
-seedEmployees();
+seedDatabase();
 
 export const server = app.listen(PORT, () => {
-	console.log(`Server running on http://localhost${PORT}`);
+	console.log(`Server running on http://localhost:${PORT}`);
 });
 
 export default app;

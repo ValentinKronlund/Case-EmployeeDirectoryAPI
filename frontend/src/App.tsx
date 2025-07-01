@@ -1,6 +1,8 @@
 /** @format */
 
 import { useEffect, useState } from 'react';
+import { useRequest } from './hooks/useRequest';
+import { Employee } from './types';
 import {
 	TableContainer,
 	Table,
@@ -12,76 +14,113 @@ import {
 	Box,
 	Stack,
 	Typography,
+	CircularProgress,
 } from '@mui/material';
-import { Employee } from './types/Employee';
-import {
-	deleteEmployees,
-	fetchAllEmployees,
-	searchEmployees,
-	createEmployee,
-} from './services/employeeService';
-import { EmployeeHeader } from './components/EmployeeHeader';
-import { EmployeeRow } from './components/EmployeeRow';
-import { ConfirmDialog } from './components/ConfirmDialog';
-import { AddEmployee } from './components/AddEmployee';
+import { EmployeeHeader, EmployeeRow, ConfirmDialog, AddEmployee } from './components';
 
 function App() {
 	const [employees, setEmployees] = useState<Employee[]>([]);
-	const [searchValue, setSearchValue] = useState<String>('');
-	const [selectedEmployees, setSelectedEmployees] = useState<readonly Employee['id'][]>(
-		[],
-	);
+	const [searchValue, setSearchValue] = useState<string>('');
+	const [selectedEmployees, setSelectedEmployees] = useState<Employee['id'][]>([]);
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const [addEmployeeDialogOpen, setAddEmployeeDialogOpen] = useState(false);
+
+	const {
+		loading,
+		error,
+		execute: fetchEmployees,
+	} = useRequest<Employee[]>({
+		url: `/employees`,
+		method: 'GET',
+		buildError: { message: 'Failed to fetch employees 🦧' },
+	});
+
+	const { execute: deleteSelectedEmployees } = useRequest({
+		url: '/employees/delete',
+		method: 'DELETE',
+		body: { ids: selectedEmployees },
+		buildError: { message: 'Failed to delete employee(s) 🦧' },
+	});
+
+	const { execute: searchEmployees } = useRequest({
+		url: `/employees/search`,
+		method: 'POST',
+		body: { query: searchValue },
+		buildError: { message: 'Failed to find a hit while searching for employee 🦧' },
+	});
+
+	const { execute: addEmployee } = useRequest({
+		url: '/employees/add',
+		method: 'POST',
+		body: { newEmployee: {} },
+		buildError: {
+			message: `Failed to add new employee 🦧`,
+		},
+	});
+
+	useEffect(() => {
+		reloadEmployees();
+	}, []);
+
+	// ---------------- HANDLERS
+
+	async function reloadEmployees() {
+		const res = await fetchEmployees();
+		setEmployees(res ?? []);
+	}
+
+	async function handleSearch(e: React.FormEvent) {
+		e.preventDefault();
+
+		if (searchValue.trim() === '') {
+			await reloadEmployees();
+		} else {
+			const res = await searchEmployees({
+				body: { query: searchValue },
+			});
+			if (Array.isArray(res)) setEmployees(res);
+		}
+
+		setSearchValue('');
+	}
+
+	async function handleAddEmployee(newEmployee: Omit<Employee, 'id'>) {
+		await addEmployee({
+			body: { newEmployee },
+			buildError: {
+				message: `Failed to add new employee ${newEmployee.name} ${newEmployee.surname}, ${newEmployee.email} 🦧`,
+			},
+		});
+		await reloadEmployees();
+	}
+
+	function handleOpenDeletePopUp(e: React.FormEvent) {
+		e.preventDefault();
+		setDeleteDialogOpen(true);
+	}
+
+	async function handleDeleteConfirmation(answer: boolean) {
+		if (answer) {
+			await deleteSelectedEmployees({
+				body: { ids: selectedEmployees },
+			});
+			await reloadEmployees();
+			setDeleteDialogOpen(false);
+			setSelectedEmployees([]);
+		}
+	}
 
 	const handleSelectAllEmployees = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setSelectedEmployees(e.target.checked ? employees.map((e) => e.id) : []);
 	};
 
-	const handleSelectEmployee = (e: React.MouseEvent<unknown>, id: number) => {
+	const handleSelectEmployee = (id: number) => {
 		setSelectedEmployees((prev) =>
 			prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
 		);
 	};
 
-	const handleSearch = async (e: React.FormEvent) => {
-		e.preventDefault();
-
-		if (searchValue.trim() === '') {
-			await fetchAllEmployees().then(setEmployees).catch(console.error);
-			setSearchValue('');
-		} else {
-			await searchEmployees(searchValue.trim()).then(setEmployees).catch(console.error);
-			setSearchValue('');
-		}
-	};
-
-	const handleDeleteSelected = (e: React.FormEvent) => {
-		e.preventDefault();
-		setDeleteDialogOpen(true);
-	};
-
-	const handleDeleteConfirmation = async (answer: boolean) => {
-		setDeleteDialogOpen(false);
-		if (answer) {
-			await deleteEmployees(selectedEmployees);
-			await fetchAllEmployees().then(setEmployees).catch(console.error);
-			setSelectedEmployees([]);
-			setSearchValue('');
-		}
-	};
-
-	const handleAddEmployee = async (newEmployee: Omit<Employee, 'id'>) => {
-		setAddEmployeeDialogOpen(true);
-		await createEmployee(newEmployee)
-			.then((e) => console.log(e))
-			.catch(console.error);
-		await fetchAllEmployees().then(setEmployees).catch(console.error);
-	};
-
-	useEffect(() => {
-		fetchAllEmployees().then(setEmployees).catch(console.error);
-	}, []);
+	// ------------- END OF HANDLERS
 
 	return (
 		<Box
@@ -109,33 +148,35 @@ function App() {
 					</Button>
 				</Stack>
 			</form>
-
-			<TableContainer component={Paper} sx={{ maxWidth: 650, maxHeight: 440 }}>
-				<Table stickyHeader aria-label='Employees Table'>
-					<TableHead>
-						<EmployeeHeader
-							selectedEmployees={selectedEmployees}
-							handleSelectAllEmployees={handleSelectAllEmployees}
-						/>
-					</TableHead>
-					<TableBody>
-						{employees.map((employee) => (
-							<EmployeeRow
-								key={employee.id}
-								employee={employee}
+			{loading ? (
+				<CircularProgress />
+			) : (
+				<TableContainer component={Paper} sx={{ maxWidth: 650, maxHeight: 440 }}>
+					<Table stickyHeader aria-label='Employees Table'>
+						<TableHead>
+							<EmployeeHeader
 								selectedEmployees={selectedEmployees}
-								handleSelectEmployee={handleSelectEmployee}
+								handleSelectAllEmployees={handleSelectAllEmployees}
 							/>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
-
+						</TableHead>
+						<TableBody>
+							{employees.map((employee) => (
+								<EmployeeRow
+									key={employee.id}
+									employee={employee}
+									selectedEmployees={selectedEmployees}
+									handleSelectEmployee={handleSelectEmployee}
+								/>
+							))}
+						</TableBody>
+					</Table>
+				</TableContainer>
+			)}
 			<Stack direction='row' spacing={2}>
 				<Button
 					variant='contained'
 					color='error'
-					onClick={handleDeleteSelected}
+					onClick={handleOpenDeletePopUp}
 					disabled={selectedEmployees.length === 0}>
 					Delete Selected
 				</Button>
@@ -149,15 +190,15 @@ function App() {
 
 			<ConfirmDialog
 				open={deleteDialogOpen}
-				onClose={() => setDeleteDialogOpen(false)}
-				onConfirm={handleDeleteConfirmation}
+				onClose={setDeleteDialogOpen}
+				onSubmit={handleDeleteConfirmation}
 				message='Are you sure you want to delete this employee?'
 			/>
 
 			<AddEmployee
 				open={addEmployeeDialogOpen}
-				onClose={() => setAddEmployeeDialogOpen(false)}
-				onAdd={handleAddEmployee}
+				onClose={setAddEmployeeDialogOpen}
+				onSubmit={handleAddEmployee}
 			/>
 		</Box>
 	);

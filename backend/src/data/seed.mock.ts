@@ -1,6 +1,8 @@
 /** @format */
 
-export const employees = [
+import { Employee } from '../types';
+
+export const employeesSeed: Employee[] = [
 	{ id: 0, name: 'Nole', surname: 'Nullish', email: '0x00@not1.com' },
 	{ id: 1, name: 'Alice', surname: 'Alexandersson', email: 'alice.alex@nomail.com' },
 	{ id: 2, name: 'Bob', surname: 'Bovine', email: 'bob.b@nomail.com' },

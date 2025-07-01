@@ -8,8 +8,21 @@ import {
 	DialogActions,
 	Button,
 } from '@mui/material';
+import { FC } from 'react';
 
-export function ConfirmDialog({ open, onClose, onConfirm, message }: any) {
+interface ConfirmDialogProps {
+	message: string;
+	open: boolean;
+	onClose: React.Dispatch<React.SetStateAction<boolean>>;
+	onSubmit: (bool: boolean) => void;
+}
+
+export const ConfirmDialog: FC<ConfirmDialogProps> = ({
+	message,
+	open,
+	onClose,
+	onSubmit,
+}) => {
 	return (
 		<Dialog open={open} onClose={onClose}>
 			<DialogTitle>Confirm</DialogTitle>
@@ -17,11 +30,11 @@ export function ConfirmDialog({ open, onClose, onConfirm, message }: any) {
 				<DialogContentText>{message}</DialogContentText>
 			</DialogContent>
 			<DialogActions>
-				<Button onClick={onClose}>Cancel</Button>
-				<Button onClick={onConfirm} color='primary' variant='contained'>
+				<Button onClick={() => onClose(false)}>Cancel</Button>
+				<Button onClick={() => onSubmit(true)} color='primary' variant='contained'>
 					Confirm
 				</Button>
 			</DialogActions>
 		</Dialog>
 	);
-}
+};
