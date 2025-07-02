@@ -13,8 +13,6 @@ app.use(express.json());
 app.use('/api/employees', employeesRouter);
 
 export const server = app.listen(PORT, async () => {
-	console.log(`🙈🙊🙉🐵`, process.env.NODE_ENV);
-
 	if (process.env.NODE_ENV !== 'test') {
 		await seedDatabase();
 	}

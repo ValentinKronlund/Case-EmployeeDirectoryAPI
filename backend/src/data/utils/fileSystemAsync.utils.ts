@@ -14,7 +14,7 @@ export async function readEmployeesFiles(): Promise<Employee[]> {
 
 	const { error, value } = employeeArraySchema.validate(parsedData);
 	if (error) {
-		console.error('INVALID DATA: ', value);
+		console.error({ error, value });
 		throw new Error('Invalid employee data in file');
 	}
 	return value;

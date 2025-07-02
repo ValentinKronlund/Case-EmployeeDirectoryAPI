@@ -8,7 +8,7 @@ import {
 	deleteEmployees,
 } from '../data/employeeStore';
 import { Employee } from '../types/Employee';
-import { checkDuplicateEmail, validateSchema } from './middleware';
+import { checkDatabaseHealth, checkDuplicateEmail, validateSchema } from './middleware';
 import { newEmployeeSchema, deleteIdsSchema, searchQuerySchema } from './schemas';
 import {
 	DeleteEmployeeRequestIDs,
@@ -17,6 +17,7 @@ import {
 } from '../types';
 
 const router = express.Router();
+router.use(checkDatabaseHealth);
 
 router.get('/', async (req, res) => {
 	const results = await getAllEmployees();

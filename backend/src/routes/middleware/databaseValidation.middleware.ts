@@ -2,11 +2,12 @@
 
 // src/routes/middleware/checkDuplicateEmail.middleware.ts
 
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { getAllEmployees } from '../../data/employeeStore';
+import { NewEmployeeRequest } from '../../types';
 
 export async function checkDuplicateEmail(
-	req: Request,
+	req: NewEmployeeRequest,
 	res: Response,
 	next: NextFunction,
 ) {
@@ -29,7 +30,7 @@ export async function checkDuplicateEmail(
 			return;
 		}
 
-		next(); // Proceed if no duplicate found
+		next();
 	} catch (err) {
 		console.error('❌ Error checking for duplicate email:', err);
 		res.status(500).json({ error: 'Internal Server Error' });

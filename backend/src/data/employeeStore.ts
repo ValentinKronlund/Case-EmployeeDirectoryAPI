@@ -1,6 +1,10 @@
 /** @format */
 import { Employee } from '../types';
-import { readEmployeesFiles, writeEmployeesFile } from './utils';
+import {
+	filterSearchedEmployeesByQuery,
+	readEmployeesFiles,
+	writeEmployeesFile,
+} from './utils';
 
 export async function getAllEmployees(): Promise<Employee[]> {
 	try {
@@ -15,12 +19,7 @@ export async function getAllEmployees(): Promise<Employee[]> {
 
 export async function searchEmployees(query: string): Promise<Employee[]> {
 	const employeeData = await getAllEmployees();
-	const filteredData = employeeData.filter((employee) => {
-		return [employee.name, employee.surname, employee.email, employee.id].some(
-			(searchField) => searchField.toString().toLowerCase().includes(query.toLowerCase()),
-		);
-	});
-
+	const filteredData = filterSearchedEmployeesByQuery(employeeData, query);
 	return filteredData;
 }
 

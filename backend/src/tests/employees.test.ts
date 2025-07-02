@@ -8,9 +8,10 @@ describe('GET /api/employees', () => {
 	describe('| No search query arguments passed:', () => {
 		it('| test should return all employees', async () => {
 			const res = await request(app).get('/api/employees');
+			const successStringMatch = 'Successfully fetched employee data';
 
 			expect(res.statusCode).toEqual(200);
-			expect(res.body.message).toMatch(/Successfully fetched employee data/i);
+			expect(res.body.message).toMatch(successStringMatch);
 			expect(res.body.error).toEqual(undefined);
 			expect(res.body).toHaveProperty('data', employeesSeed);
 		});
@@ -49,7 +50,7 @@ describe('POST /api/employees/search', () => {
 					surname: 'Alexandersson',
 					email: 'alice.alex@nomail.com',
 				},
-				{ id: 10, name: 'Jake', surname: 'Josephs', email: 'JJ.Adams@nomail.com' },
+				{ id: 10, name: 'Jake', surname: 'Josephs', email: 'jj.adams@nomail.com' },
 			]);
 		});
 	});
@@ -61,7 +62,7 @@ describe('POST /api/employees/search', () => {
 
 			expect(res.statusCode).toEqual(200);
 			expect(res.body).toEqual([
-				{ id: 5, name: 'Eric', surname: 'Erving', email: 'Eric@nomail.com' },
+				{ id: 5, name: 'Eric', surname: 'Erving', email: 'eric@nomail.com' },
 			]);
 		});
 	});

@@ -8,6 +8,7 @@ export const employeeSchema = Joi.object({
 	surname: Joi.string().required(),
 	email: Joi.string()
 		.email({ tlds: { allow: false } })
+		.lowercase()
 		.required(),
 });
 
