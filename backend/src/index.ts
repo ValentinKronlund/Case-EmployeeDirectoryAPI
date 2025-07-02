@@ -6,14 +6,18 @@ import { seedDatabase } from './data/utils/fileSystemAsync.utils';
 import cors from 'cors';
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
 app.use(cors());
+app.use(express.json());
 app.use('/api/employees', employeesRouter);
 
-seedDatabase();
+export const server = app.listen(PORT, async () => {
+	console.log(`🙈🙊🙉🐵`, process.env.NODE_ENV);
 
-export const server = app.listen(PORT, () => {
+	if (process.env.NODE_ENV !== 'test') {
+		await seedDatabase();
+	}
 	console.log(`Server running on http://localhost:${PORT}`);
 });
 

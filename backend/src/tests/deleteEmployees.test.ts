@@ -1,9 +1,6 @@
 /** @format */
-
-/** @format */
-
 import request from 'supertest';
-import app, { server } from '../index';
+import app from '../index';
 import { Employee } from '../types';
 
 describe('POST /api/employees/delete', () => {
@@ -68,27 +65,25 @@ describe('POST /api/employees/delete', () => {
 			expect(res.statusCode).toEqual(200);
 			expect(res.body.message).toEqual(successStringMatch);
 		});
-		// it('| should not expect deleted employees to remain in the database', async () => {
-		// 	const { body: remainingEmployeesResult } = await request(app).get('/api/employees');
-		// 	const matchedEmployeeWithDeleted = remainingEmployeesResult.data.filter(
-		// 		(employee: Employee) => query.ids.includes(employee.id),
-		// 	);
+		it('| should not expect deleted employees to remain in the database', async () => {
+			const forbiddenIds = [2, 3, 4, 5];
+			const res = await request(app).get('/api/employees');
+			const remainingEmployees = res.body.data;
+			const containsForbidden = remainingEmployees.some((employee: Employee) =>
+				forbiddenIds.includes(employee.id),
+			);
 
-		// 	expect(matchedEmployeeWithDeleted).toEqual([]);
-		// });
-	});
+			expect(containsForbidden).toBe(false);
+		});
 
-	describe('| Passing multiple employees "id" as a mixed array type inside of an object, with a key of "ids"', () => {
-		it('should throw a "400" Bad Request error, with failing message', async () => {
-			const query = { ids: [6, '7', { '8': 8 }, [9]] };
-			const res = await request(app).delete('/api/employees/delete').send(query);
-			const errorStringMatch = 'ID must be a number';
-			expect(res.statusCode).toEqual(400);
-			expect(res.body.error).toEqual(errorStringMatch);
+		describe('| Passing multiple employees "id" as a mixed array type inside of an object, with a key of "ids"', () => {
+			it('should throw a "400" Bad Request error, with failing message', async () => {
+				const query = { ids: [6, '7', { '8': 8 }, [9]] };
+				const res = await request(app).delete('/api/employees/delete').send(query);
+				const errorStringMatch = 'ID must be a number';
+				expect(res.statusCode).toEqual(400);
+				expect(res.body.error).toEqual(errorStringMatch);
+			});
 		});
 	});
-});
-
-afterAll((done) => {
-	server.close(done);
 });

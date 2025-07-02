@@ -28,7 +28,11 @@ export const AddEmployee: FC<AddEmployeeProps> = ({ open, onClose, onSubmit }) =
 		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 		field: keyof Omit<Employee, 'id'>,
 	) {
-		setForm((prev) => ({ ...prev, [field]: e.target.value }));
+		if (field === 'email') {
+			setForm((prev) => ({ ...prev, [field]: e.target.value.toLowerCase() }));
+		} else {
+			setForm((prev) => ({ ...prev, [field]: e.target.value }));
+		}
 	}
 
 	const handleSubmit = () => {

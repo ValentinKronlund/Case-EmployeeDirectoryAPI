@@ -21,6 +21,7 @@ export const newEmployeeSchema = Joi.object({
 		}),
 		email: Joi.string()
 			.email({ tlds: { allow: false } })
+			.lowercase()
 			.required()
 			.messages({
 				'string.base': 'Email must be a string',

@@ -17,6 +17,7 @@ import {
 	CircularProgress,
 } from '@mui/material';
 import { EmployeeHeader, EmployeeRow, ConfirmDialog, AddEmployee } from './components';
+import { EmployeeResponseObject } from './types/Responses';
 
 function App() {
 	const [employees, setEmployees] = useState<Employee[]>([]);
@@ -29,7 +30,7 @@ function App() {
 		loading,
 		error,
 		execute: fetchEmployees,
-	} = useRequest<Employee[]>({
+	} = useRequest<EmployeeResponseObject>({
 		url: `/employees`,
 		method: 'GET',
 		buildError: { message: 'Failed to fetch employees 🦧' },
@@ -66,7 +67,9 @@ function App() {
 
 	async function reloadEmployees() {
 		const res = await fetchEmployees();
-		setEmployees(res ?? []);
+		if (res) {
+			setEmployees(res.data ?? []);
+		}
 	}
 
 	async function handleSearch(e: React.FormEvent) {

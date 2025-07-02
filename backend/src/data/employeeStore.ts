@@ -6,7 +6,9 @@ export async function getAllEmployees(): Promise<Employee[]> {
 	try {
 		return await readEmployeesFiles();
 	} catch (error) {
-		console.error('Failed to read "employees.json"', error);
+		if (process.env.NODE_ENV !== 'test') {
+			console.error('Failed to read "employees.json"', error);
+		}
 		return [];
 	}
 }

@@ -1,12 +1,12 @@
 /** @format */
 
 import request from 'supertest';
-import app, { server } from '../index';
+import app from '../index';
 import { employeesSeed } from '../data/seed.mock';
 
 describe('GET /api/employees', () => {
 	describe('| No search query arguments passed:', () => {
-		it('should return all employees', async () => {
+		it('| test should return all employees', async () => {
 			const res = await request(app).get('/api/employees');
 
 			expect(res.statusCode).toEqual(200);
@@ -19,7 +19,7 @@ describe('GET /api/employees', () => {
 
 describe('POST /api/employees/search', () => {
 	describe('| Search argument "Alice" passed:', () => {
-		it('should return the employee "Alice"', async () => {
+		it('| test should return the employee "Alice"', async () => {
 			const query = { query: 'Alice' };
 			const res = await request(app).post('/api/employees/search').send(query);
 
@@ -36,7 +36,7 @@ describe('POST /api/employees/search', () => {
 	});
 
 	describe('| Search argument "1" passed: ', () => {
-		it('should return employees with "1" in any of their data', async () => {
+		it('| test should return employees with "1" in any of their data', async () => {
 			const query = { query: '1' };
 			const res = await request(app).post('/api/employees/search').send(query);
 
@@ -55,7 +55,7 @@ describe('POST /api/employees/search', () => {
 	});
 
 	describe('| Search argument "ErViNg" passed:', () => {
-		it('should return the employee "Eric Erving"', async () => {
+		it('| test should return the employee "Eric Erving"', async () => {
 			const query = { query: 'ErViNg' };
 			const res = await request(app).post('/api/employees/search').send(query);
 
@@ -67,7 +67,7 @@ describe('POST /api/employees/search', () => {
 	});
 
 	describe('| Search argument "Alexandersson Erving" passed:', () => {
-		it('should throw a Not Found (404) error', async () => {
+		it('| test should throw a Not Found (404) error', async () => {
 			const query = { query: 'Alexandersson Erving' };
 			const res = await request(app).post('/api/employees/search').send(query);
 
@@ -280,8 +280,4 @@ describe('POST /api/employees/add', () => {
 			expect(result.body.error).toEqual(undefined);
 		});
 	});
-});
-
-afterAll((done) => {
-	server.close(done);
 });
