@@ -2,17 +2,19 @@
 
 import Joi from 'joi';
 
+const nameRegex = /^[\p{L}]+(?:[-\s][\p{L}]+)*$/u;
+
 export const newEmployeeSchema = Joi.object({
 	newEmployee: Joi.object({
 		id: Joi.number().optional(),
-		name: Joi.string().min(2).required().messages({
+		name: Joi.string().pattern(nameRegex).min(2).required().messages({
 			'string.base': 'Name must be a string',
 			'string.min': 'Name must be at least 2 characters long',
 			'string.empty':
 				'Name cannot be empty, instead it must be at least 2 characters long.',
 			'any.required': 'Name is required',
 		}),
-		surname: Joi.string().min(2).required().messages({
+		surname: Joi.string().pattern(nameRegex).min(2).required().messages({
 			'string.base': 'Surname must be a string',
 			'string.min': 'Surname must be at least 2 characters long',
 			'string.empty':

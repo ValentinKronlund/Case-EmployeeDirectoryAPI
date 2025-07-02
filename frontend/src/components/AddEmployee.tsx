@@ -28,10 +28,14 @@ export const AddEmployee: FC<AddEmployeeProps> = ({ open, onClose, onSubmit }) =
 		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 		field: keyof Omit<Employee, 'id'>,
 	) {
+		const input = e.target.value;
+		const nameRegex = /[^a-zA-Z\s]/g;
+
 		if (field === 'email') {
-			setForm((prev) => ({ ...prev, [field]: e.target.value.toLowerCase() }));
+			setForm((prev) => ({ ...prev, [field]: input.toLowerCase() }));
 		} else {
-			setForm((prev) => ({ ...prev, [field]: e.target.value }));
+			const onlyAlphabetics = input.replace(nameRegex, '');
+			setForm((prev) => ({ ...prev, [field]: onlyAlphabetics }));
 		}
 	}
 
@@ -51,18 +55,23 @@ export const AddEmployee: FC<AddEmployeeProps> = ({ open, onClose, onSubmit }) =
 					value={form.name}
 					onChange={(e) => handleChange(e, 'name')}
 					fullWidth
+					required
 				/>
 				<TextField
 					label='Surname'
+					type='text'
 					value={form.surname}
 					onChange={(e) => handleChange(e, 'surname')}
 					fullWidth
+					required
 				/>
 				<TextField
 					label='Email'
+					type='email'
 					value={form.email}
 					onChange={(e) => handleChange(e, 'email')}
 					fullWidth
+					required
 				/>
 			</DialogContent>
 			<DialogActions>
