@@ -47,7 +47,7 @@ describe('POST /api/employees/delete', () => {
 	});
 
 	describe('| Passing a single employees "id" as an object, with a key of "ids" and an array of STRING as a value', () => {
-		it('should throw a "200" Success code, with a success message', async () => {
+		it('should return a "200" Success code, with a success message', async () => {
 			const query = { ids: ['2'] };
 			const res = await request(app).delete('/api/employees/delete').send(query);
 			const successStringMatch = `Users with the following ids have been deleted: ${query.ids[0]}`;
